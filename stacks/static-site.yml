@@ -1,0 +1,49 @@
+---
+
+Description: Static website on S3
+
+Resources:
+  LogBucket:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: aws-playground-logs
+      AccessControl: LogDeliveryWrite
+      Tags:
+        - Key: BucketType
+          Value: logs
+
+  StaticSiteBucket:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: aws-playground-site
+      Tags:
+        - Key: BucketType
+          Value: public-site
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LogBucket
+        LogFilePrefix: aws-playground-site
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error/index.html
+
+  StaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Principal: '*'
+            Resource:
+              - !Join [ '', [ !GetAtt StaticSiteBucket.Arn, '/*' ] ]
+
+Outputs:
+  StaticSiteBucket:
+    Description: Bucket name of static site
+    Value: !Ref StaticSiteBucket

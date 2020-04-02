@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -euo pipefail
+
+CURRENT_DIR=$(pwd)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
+
+aws s3 cp $DIR/frontends/static-site s3://aws-playground-site --recursive
