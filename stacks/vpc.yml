@@ -127,6 +127,21 @@ Resources:
         - Key: Name
           Value: aws-playground-gateway
 
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web Server Security Group
+      GroupName: aws-playground-webserver-sg
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+      Tags:
+        - Key: Name
+          Value: aws-playground-webserver-sg
+
 Outputs:
   VPC:
     Description: A reference to the created VPC
