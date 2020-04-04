@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -euo pipefail
+
+CURRENT_DIR=$(pwd)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
+
+aws cloudformation deploy \
+  --template-file $DIR/stacks/code-build.yml \
+  --stack-name aws-playground-code-build \
+  --capabilities CAPABILITY_NAMED_IAM
+
+

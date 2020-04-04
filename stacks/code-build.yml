@@ -1,0 +1,79 @@
+---
+Description: Code build project
+
+Parameters:
+  BuildSpec:
+    Description: Enter build spec file path
+    Type: String
+    Default: buildspec.yml
+
+  Image:
+    Description: Enter docker image
+    Type: String
+    Default: acloudgurudevs/acg:12.14.0
+
+  GithubUrl:
+    Description: Enter path to github https clone url
+    Type: String
+    Default: https://github.com/adikari/aws-playground
+
+  LogGroup:
+    Description: Enter log group name
+    Type: String
+    Default: /aws-playground/code-build
+
+Resources:
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: aws-playground
+      Artifacts:
+        Type: NO_ARTIFACTS
+      LogsConfig:
+        CloudWatchLogs:
+          GroupName: !Ref LogGroup
+          Status: ENABLED
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: !Ref Image
+        ComputeType: BUILD_GENERAL1_SMALL
+      Source:
+        Type: GITHUB
+        BuildSpec: !Ref BuildSpec
+        Auth:
+          Type: OAUTH
+        Location: !Ref GithubUrl
+        ReportBuildStatus: true
+      Triggers:
+        Webhook: true
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub CodeBuildRole-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codebuild.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: /service-role/
+      Policies:
+        -
+          PolicyName: "CodeBuildAccessPolicies"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}*
